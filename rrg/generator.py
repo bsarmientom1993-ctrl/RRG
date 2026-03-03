@@ -1,29 +1,29 @@
-"""Core region model and generator logic for REAPER regions."""
+"""Modelo de región y lógica del generador para regiones de REAPER."""
 
 import csv
 import uuid
 
 
 class Region:
-    """Represents a single REAPER region with a name, time range, and color."""
+    """Representa una región de REAPER con nombre, rango de tiempo y color."""
 
     def __init__(self, name, start, end, color=None):
-        """Create a Region.
+        """Crea una Región.
 
         Args:
-            name: Display name of the region.
-            start: Start time in seconds.
-            end: End time in seconds.
-            color: Optional tuple of (r, g, b) integers 0-255.
+            name: Nombre visible de la región.
+            start: Tiempo de inicio en segundos.
+            end: Tiempo de fin en segundos.
+            color: Tupla opcional de (r, g, b) enteros 0-255.
 
         Raises:
-            ValueError: If start >= end or times are negative.
+            ValueError: Si start >= end o los tiempos son negativos.
         """
         if start < 0 or end < 0:
-            raise ValueError("Region times must be non-negative")
+            raise ValueError("Los tiempos de la región deben ser no negativos")
         if start >= end:
             raise ValueError(
-                f"Region start ({start}) must be before end ({end})"
+                f"El inicio de la región ({start}) debe ser anterior al fin ({end})"
             )
         self.name = name
         self.start = float(start)
@@ -32,14 +32,14 @@ class Region:
 
     @property
     def length(self):
-        """Duration of the region in seconds."""
+        """Duración de la región en segundos."""
         return self.end - self.start
 
     def reaper_color(self):
-        """Return the REAPER native color integer for this region.
+        """Devuelve el entero de color nativo de REAPER para esta región.
 
-        REAPER stores colors as ``(r | (g << 8) | (b << 16)) | 0x1000000``.
-        Returns 0 (default color) when no color is set.
+        REAPER almacena colores como ``(r | (g << 8) | (b << 16)) | 0x1000000``.
+        Devuelve 0 (color por defecto) cuando no se asigna color.
         """
         if self.color is None:
             return 0
@@ -64,40 +64,40 @@ class Region:
 
 
 class RegionGenerator:
-    """Builds a list of REAPER regions and exports them in various formats."""
+    """Construye una lista de regiones de REAPER y las exporta en varios formatos."""
 
     def __init__(self):
         self.regions = []
 
     def add_region(self, name, start, end, color=None):
-        """Add a region to the generator.
+        """Agrega una región al generador.
 
         Args:
-            name: Region name.
-            start: Start time in seconds.
-            end: End time in seconds.
-            color: Optional (r, g, b) tuple.
+            name: Nombre de la región.
+            start: Tiempo de inicio en segundos.
+            end: Tiempo de fin en segundos.
+            color: Tupla opcional (r, g, b).
 
         Returns:
-            The created Region instance.
+            La instancia de Region creada.
         """
         region = Region(name, start, end, color)
         self.regions.append(region)
         return region
 
     def clear(self):
-        """Remove all regions."""
+        """Elimina todas las regiones."""
         self.regions.clear()
 
-    # ---- Input helpers -------------------------------------------------- #
+    # ---- Ayudantes de entrada ------------------------------------------- #
 
     def load_csv(self, filepath):
-        """Load regions from a CSV file.
+        """Carga regiones desde un archivo CSV.
 
-        Expected columns: ``name, start, end[, r, g, b]``
+        Columnas esperadas: ``name, start, end[, r, g, b]``
 
         Args:
-            filepath: Path to the CSV file.
+            filepath: Ruta al archivo CSV.
         """
         with open(filepath, newline="", encoding="utf-8") as fh:
             reader = csv.reader(fh)
@@ -116,17 +116,17 @@ class RegionGenerator:
                 self.add_region(name, start, end, color)
 
     def load_template(self, template_name):
-        """Load a built-in region template.
+        """Carga una plantilla de regiones integrada.
 
-        Available templates:
-            - ``song``: Standard pop/rock song structure.
-            - ``podcast``: Simple podcast episode structure.
+        Plantillas disponibles:
+            - ``song``: Estructura estándar de canción pop/rock.
+            - ``podcast``: Estructura simple de episodio de podcast.
 
         Args:
-            template_name: Name of the template.
+            template_name: Nombre de la plantilla.
 
         Raises:
-            ValueError: If the template name is unknown.
+            ValueError: Si el nombre de la plantilla es desconocido.
         """
         templates = {
             "song": [
@@ -150,22 +150,22 @@ class RegionGenerator:
 
         if template_name not in templates:
             raise ValueError(
-                f"Unknown template '{template_name}'. "
-                f"Available: {', '.join(sorted(templates))}"
+                f"Plantilla desconocida '{template_name}'. "
+                f"Disponibles: {', '.join(sorted(templates))}"
             )
 
         for name, start, end, color in templates[template_name]:
             self.add_region(name, start, end, color)
 
-    # ---- Output helpers ------------------------------------------------- #
+    # ---- Ayudantes de salida -------------------------------------------- #
 
     def to_csv(self, filepath):
-        """Export regions as a tab-separated CSV file compatible with REAPER.
+        """Exporta regiones como archivo CSV separado por tabulaciones compatible con REAPER.
 
-        The file can be imported via REAPER's Region/Marker Manager.
+        El archivo se puede importar desde el Region/Marker Manager de REAPER.
 
         Args:
-            filepath: Destination file path.
+            filepath: Ruta del archivo de destino.
         """
         with open(filepath, "w", newline="", encoding="utf-8") as fh:
             writer = csv.writer(fh, delimiter="\t")
@@ -181,16 +181,17 @@ class RegionGenerator:
                 ])
 
     def to_lua(self, filepath):
-        """Export regions as a Lua ReaScript that creates them inside REAPER.
+        """Exporta regiones como un script Lua ReaScript para ejecutar en REAPER.
 
-        Users can run the generated ``.lua`` file from REAPER's Actions menu.
+        Los usuarios pueden ejecutar el archivo ``.lua`` generado desde el menú
+        Actions de REAPER.
 
         Args:
-            filepath: Destination file path.
+            filepath: Ruta del archivo de destino.
         """
         lines = [
-            "-- RRG: REAPER Region Generator",
-            "-- Run this script inside REAPER to create regions.",
+            "-- RRG: Generador de Regiones para REAPER",
+            "-- Ejecuta este script dentro de REAPER para crear las regiones.",
             "",
             "reaper.Undo_BeginBlock()",
             'reaper.PreventUIRefresh(1)',
@@ -207,19 +208,19 @@ class RegionGenerator:
             "",
             'reaper.PreventUIRefresh(-1)',
             "reaper.UpdateArrange()",
-            'reaper.Undo_EndBlock("RRG: Create regions", -1)',
+            'reaper.Undo_EndBlock("RRG: Crear regiones", -1)',
             "",
         ]
         with open(filepath, "w", encoding="utf-8") as fh:
             fh.write("\n".join(lines))
 
     def to_rpp_markers(self, filepath):
-        """Export regions as RPP MARKER lines for inclusion in a .rpp file.
+        """Exporta regiones como líneas MARKER de RPP para incluir en un archivo .rpp.
 
-        Each region is represented as a pair of MARKER entries (start/end).
+        Cada región se representa como un par de entradas MARKER (inicio/fin).
 
         Args:
-            filepath: Destination file path.
+            filepath: Ruta del archivo de destino.
         """
         lines = []
         marker_id = 1
@@ -239,11 +240,11 @@ class RegionGenerator:
             fh.write("\n".join(lines) + "\n")
 
 
-# ---- Helpers ------------------------------------------------------------ #
+# ---- Ayudantes --------------------------------------------------------- #
 
 
 def _format_time(seconds):
-    """Format seconds as ``M:SS.mmm`` for REAPER CSV import."""
+    """Formatea segundos como ``M:SS.mmm`` para importación CSV de REAPER."""
     minutes = int(seconds) // 60
     secs = seconds - minutes * 60
     return f"{minutes}:{secs:06.3f}"

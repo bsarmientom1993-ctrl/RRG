@@ -1,4 +1,4 @@
-"""Tests for rrg.generator — Region model and RegionGenerator."""
+"""Pruebas para rrg.generator — Modelo de región y RegionGenerator."""
 
 import csv
 import os
@@ -9,7 +9,7 @@ import pytest
 from rrg.generator import Region, RegionGenerator, _format_time
 
 
-# ── Region model ────────────────────────────────────────────────────────── #
+# ── Modelo de región ────────────────────────────────────────────────────── #
 
 
 class TestRegion:
@@ -25,15 +25,15 @@ class TestRegion:
         assert r.length == pytest.approx(45.5)
 
     def test_negative_start_raises(self):
-        with pytest.raises(ValueError, match="non-negative"):
+        with pytest.raises(ValueError, match="no negativos"):
             Region("Bad", -1, 5)
 
     def test_start_equals_end_raises(self):
-        with pytest.raises(ValueError, match="must be before end"):
+        with pytest.raises(ValueError, match="debe ser anterior al fin"):
             Region("Bad", 10, 10)
 
     def test_start_after_end_raises(self):
-        with pytest.raises(ValueError, match="must be before end"):
+        with pytest.raises(ValueError, match="debe ser anterior al fin"):
             Region("Bad", 20, 10)
 
     def test_reaper_color_default(self):
@@ -85,7 +85,7 @@ class TestRegionGenerator:
 
     def test_load_template_unknown_raises(self):
         gen = RegionGenerator()
-        with pytest.raises(ValueError, match="Unknown template"):
+        with pytest.raises(ValueError, match="Plantilla desconocida"):
             gen.load_template("unknown")
 
     def test_load_csv(self):
@@ -117,7 +117,7 @@ class TestRegionGenerator:
         finally:
             os.unlink(path)
 
-    # ── Export: CSV ─────────────────────────────────────────────────────── #
+    # ── Exportar: CSV ──────────────────────────────────────────────────── #
 
     def test_to_csv_creates_file(self):
         gen = RegionGenerator()
@@ -140,7 +140,7 @@ class TestRegionGenerator:
         finally:
             os.unlink(path)
 
-    # ── Export: Lua ─────────────────────────────────────────────────────── #
+    # ── Exportar: Lua ──────────────────────────────────────────────────── #
 
     def test_to_lua_creates_valid_script(self):
         gen = RegionGenerator()
@@ -162,7 +162,7 @@ class TestRegionGenerator:
         finally:
             os.unlink(path)
 
-    # ── Export: RPP ─────────────────────────────────────────────────────── #
+    # ── Exportar: RPP ──────────────────────────────────────────────────── #
 
     def test_to_rpp_markers_creates_file(self):
         gen = RegionGenerator()
@@ -179,13 +179,13 @@ class TestRegionGenerator:
                 content = fh.read()
             assert "MARKER" in content
             assert '"Intro"' in content
-            # Region generates a start and an end marker
+            # Una región genera un marcador de inicio y uno de fin
             assert content.count("MARKER") == 2
         finally:
             os.unlink(path)
 
 
-# ── Helpers ─────────────────────────────────────────────────────────────── #
+# ── Ayudantes ───────────────────────────────────────────────────────────── #
 
 
 class TestFormatTime:
