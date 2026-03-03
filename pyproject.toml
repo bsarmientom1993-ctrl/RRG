@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "rrg"
+version = "1.0.0"
+description = "RRG - REAPER Region Generator"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.scripts]
+rrg = "rrg.cli:main"
