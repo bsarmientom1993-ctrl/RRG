@@ -183,8 +183,7 @@ class RegionGenerator:
     def to_lua(self, filepath):
         """Exporta regiones como un script Lua ReaScript para ejecutar en REAPER.
 
-        Los usuarios pueden ejecutar el archivo ``.lua`` generado desde el menú
-        Actions de REAPER.
+        Los usuarios pueden ejecutar el archivo ``.lua`` generado desde el menú Actions de REAPER.
 
         Args:
             filepath: Ruta del archivo de destino.
